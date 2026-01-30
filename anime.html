@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NIYAZ | КАТАЛОГ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@800&display=swap" rel="stylesheet">
+    <style>
+        body { margin: 0; background: #0a0a0b; color: #fff; font-family: 'Manrope', sans-serif; padding: 20px; }
+        h1 { text-align: center; color: #ff004c; }
+        
+        .grid { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 15px; 
+            max-width: 600px; 
+            margin: 0 auto; 
+        }
+
+        .card { 
+            background: #161618; 
+            border-radius: 20px; 
+            overflow: hidden; 
+            border: 1px solid #222; 
+            cursor: pointer; 
+        }
+
+        .card img { 
+            width: 100%; 
+            aspect-ratio: 2/3; 
+            object-fit: cover; 
+            display: block; 
+        }
+
+        .name { 
+            padding: 10px; 
+            font-size: 13px; 
+            text-align: center; 
+            font-weight: 800; 
+        }
+    </style>
+</head>
+<body>
+
+    <h1>КАТАЛОГ ANIME</h1>
+
+    <div class="grid">
+        <div class="card" onclick="location.href='https://yandex.ru/video/touch/preview/13307986039426909344'">
+            <img src="i (2).jpeg">
+            <div class="name">Девочка, покорившая время</div>
+        </div>
+
+        <div class="card" onclick="location.href='https://yandex.ru/video/touch/preview/16281898739988574768'">
+            <img src="I (1).jpeg">
+            <div class="name">Возвращение кота</div>
+        </div>
+
+        <div class="card" onclick="location.href='https://yandex.ru/video/touch/preview/6189641031039040985'">
+            <img src="2026-01-30-08-13-12-images.jpg">
+            <div class="name">Унесенные призраками</div>
+        </div>
+
+        <div class="card" onclick="location.href='https://yandex.ru/video/touch/preview/6352166195409551198'">
+            <img src="2TP018QS51eFzJPCgvHCYg.png">
+            <div class="name">Твое имя</div>
+        </div>
+    </div>
+
+</body>
+</html>
