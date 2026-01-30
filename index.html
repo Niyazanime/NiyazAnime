@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NIYAZANIME | REAL</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        /* --- 1. БАЗА И СТИЛИ --- */
+        :root {
+            --main: #E50914; /* Netflix Red */
+            --bg: #000000;
+            --card-bg: #141414;
+            --text: #ffffff;
+            --gray: #808080;
+        }
+        * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
+        body { margin: 0; background: var(--bg); color: var(--text); font-family: 'Montserrat', sans-serif; padding-bottom: 75px; overflow-x: hidden; }
+
+        /* --- 2. ЭКРАН ВХОДА --- */
+        #auth-screen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 5000; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; transition: opacity 0.5s; }
+        .logo-big { color: var(--main); font-size: 40px; font-weight: 900; letter-spacing: 2px; margin-bottom: 10px; text-transform: uppercase; }
+        .auth-input { background: #333; border: 1px solid #444; padding: 15px; width: 100%; max-width: 300px; color: white; border-radius: 5px; margin-bottom: 15px; font-size: 16px; }
+        .auth-btn { background: var(--main); color: white; border: none; padding: 15px 40px; border-radius: 5px; font-weight: bold; font-size: 16px; width: 100%; max-width: 300px; cursor: pointer; }
+
+        /* --- 3. ИНТЕРФЕЙС ПРИЛОЖЕНИЯ --- */
+        #app { display: none; opacity: 0; transition: opacity 0.5s; }
+        header { padding: 15px 20px; background: rgba(0,0,0,0.8); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 100; border-bottom: 1px solid #222; display: flex; justify-content: space-between; align-items: center; }
+        .app-logo { color: var(--main); font-weight: 900; font-size: 22px; letter-spacing: 1px; }
+        .user-chip { font-size: 12px; background: #222; padding: 5px 10px; border-radius: 15px; color: #aaa; }
+
+        /* СЕТКА АНИМЕ */
+        .section { padding: 0 15px; margin-top: 20px; display: none; animation: fadeUp 0.4s ease forwards; }
+        .section.active { display: block; }
+        .section-header { font-size: 18px; font-weight: 700; margin-bottom: 15px; border-left: 3px solid var(--main); padding-left: 10px; }
+        
+        .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+        .card { background: var(--card-bg); border-radius: 8px; overflow: hidden; position: relative; }
+        .card img { width: 100%; aspect-ratio: 2/3; object-fit: cover; display: block; }
+        .card-info { padding: 10px; }
+        .card-meta { display: flex; justify-content: space-between; font-size: 10px; color: #46d369; font-weight: 700; margin-bottom: 5px; }
+        .card-title { font-size: 13px; font-weight: 600; margin-bottom: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .btn-watch { width: 100%; background: #222; border: 1px solid #333; color: white; padding: 8px; border-radius: 4px; font-size: 11px; font-weight: bold; cursor: pointer; }
+        .btn-watch:active { background: var(--main); border-color: var(--main); }
+
+        /* ПРОФИЛЬ (РЕАЛЬНЫЙ) */
+        .profile-stats { background: linear-gradient(135deg, #1a1a1a, #000); padding: 25px; border-radius: 15px; border: 1px solid #333; text-align: center; margin-bottom: 20px; }
+        .avatar { width: 80px; height: 80px; background: var(--main); border-radius: 50%; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; font-size: 35px; font-weight: 900; }
+        .stats-row { display: flex; justify-content: space-between; margin-top: 20px; background: #111; padding: 15px; border-radius: 10px; }
+        .stat-box { text-align: center; flex: 1; }
+        .stat-num { font-size: 22px; font-weight: 800; color: white; display: block; }
+        .stat-label { font-size: 10px; color: var(--gray); text-transform: uppercase; }
+
+        /* ЧАТ */
+        #chat-window { height: 60vh; background: #0a0a0a; border-radius: 10px; border: 1px solid #222; overflow-y: scroll; padding: 15px; display: flex; flex-direction: column; gap: 10px; }
+        .msg { padding: 10px; border-radius: 8px; max-width: 85%; font-size: 13px; line-height: 1.4; word-wrap: break-word; }
+        .msg.mine { background: var(--main); align-self: flex-end; color: white; }
+        .msg.other { background: #222; align-self: flex-start; color: #ccc; }
+        .msg-name { font-size: 9px; opacity: 0.7; display: block; margin-bottom: 2px; font-weight: bold; }
+        .input-area { display: flex; gap: 10px; margin-top: 10px; }
+        .input-area input { flex: 1; padding: 12px; background: #111; border: 1px solid #333; color: white; border-radius: 20px; }
+        
+        /* ПЛЕЕР */
+        #player-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: black; z-index: 2000; display: none; flex-direction: column; justify-content: center; }
+        .close-player { position: absolute; top: 20px; right: 20px; font-size: 30px; color: white; cursor: pointer; padding: 10px; }
+        .player-mock { width: 100%; height: 300px; background: #111; display: flex; align-items: center; justify-content: center; border-top: 2px solid var(--main); border-bottom: 2px solid var(--main); }
+
+        /* НАВИГАЦИЯ */
+        .nav-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: #000; border-top: 1px solid #222; display: flex; justify-content: space-around; padding: 12px 0; z-index: 1000; }
+        .nav-item { color: var(--gray); font-size: 9px; text-align: center; font-weight: 600; text-transform: uppercase; cursor: pointer; transition: 0.2s; }
+        .nav-item i { font-size: 20px; display: block; margin-bottom: 4px; font-style: normal; }
+        .nav-item.active { color: var(--main); transform: translateY(-2px); }
+
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <div id="auth-screen">
+        <div class="logo-big">NIYAZANIME</div>
+        <p style="color: #666; font-size: 12px; margin-bottom: 20px;">ПРОФЕССИОНАЛЬНЫЙ СТРИМИНГ</p>
+        <input type="text" id="reg-name" class="auth-input" placeholder="Придумайте никнейм">
+        <button class="auth-btn" onclick="register()">ВОЙТИ В СИСТЕМУ</button>
+    </div>
+
+    <div id="app">
+        <header>
+            <div class="app-logo">NIYAZANIME</div>
+            <div class="user-chip" id="header-user">Гость</div>
+        </header>
+
+        <div id="tab-home" class="section active">
+            <div class="section-header">ТОП ПРОСМОТРОВ</div>
+            <div class="grid" id="anime-container">
+                </div>
+        </div>
+
+        <div id="tab-search" class="section">
+            <div class="section-header">ПОИСК</div>
+            <input type="text" id="search-input" oninput="searchAnime()" placeholder="Название аниме..." style="width:100%; padding:15px; background:#111; border:1px solid #333; color:white; border-radius:8px; margin-bottom:20px;">
+            <div class="grid" id="search-results"></div>
+        </div>
+
+        <div id="tab-chat" class="section">
+            <div class="section-header">ЖИВОЙ ЧАТ</div>
+            <div id="chat-window"></div>
+            <div class="input-area">
+                <input type="text" id="chat-msg" placeholder="Сообщение..." onkeypress="if(event.key==='Enter')sendMsg()">
+                <button onclick="sendMsg()" style="background:var(--main); border:none; color:white; width:40px; border-radius:50%;">➤</button>
+            </div>
+        </div>
+
+        <div id="tab-profile" class="section">
+            <div class="section-header">ЛИЧНЫЙ КАБИНЕТ</div>
+            <div class="profile-stats">
+                <div class="avatar" id="profile-avatar">?</div>
+                <h2 id="profile-name" style="margin:0;">User</h2>
+                <p style="color:#666; font-size:12px; margin-top:5px;">Дата регистрации: <span id="reg-date">...</span></p>
+                
+                <div class="stats-row">
+                    <div class="stat-box">
+                        <span class="stat-num" id="stat-watched">0</span>
+                        <span class="stat-label">Просмотрено</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-num" id="stat-days">0</span>
+                        <span class="stat-label">Дней с нами</span>
+                    </div>
+                </div>
+                <button onclick="logout()" style="margin-top:20px; background:transparent; border:1px solid #333; color:#666; padding:10px 20px; border-radius:20px;">ВЫЙТИ</button>
+            </div>
+        </div>
+
+        <div class="nav-bar">
+            <div class="nav-item active" onclick="switchTab('tab-home', this)"><i>🏠</i>Главная</div>
+            <div class="nav-item" onclick="switchTab('tab-search', this)"><i>🔍</i>Поиск</div>
+            <div class="nav-item" onclick="switchTab('tab-chat', this)"><i>💬</i>Чат</div>
+            <div class="nav-item" onclick="switchTab('tab-profile', this)"><i>👤</i>Профиль</div>
+        </div>
+    </div>
+
+    <div id="player-overlay">
+        <div class="close-player" onclick="closePlayer()">✕</div>
+        <div style="text-align:center; color:white;">
+            <h2 id="player-title">Название</h2>
+            <div class="player-mock">
+                <div>
+                    <p style="font-size:40px; margin:0;">▶</p>
+                    <p>Имитация загрузки видео...</p>
+                </div>
+            </div>
+            <p style="color:#666; margin-top:20px; font-size:12px;">Счетчик просмотров обновлен</p>
+        </div>
+    </div>
+
+    <script>
+        // === БАЗА ДАННЫХ АНИМЕ (РЕАЛЬНАЯ ИНФА) ===
+        // Если хочешь добавить аниме, просто добавь строчку сюда!
+        const animeDB = [
+            {
+                title: "Твое имя",
+                year: "2016",
+                rating: "9.8", // Рейтинг IMDb
+                img: "2TP018QS51eFzJPCgvHCYg.png"
+            },
+            {
+                title: "Унесенные призраками",
+                year: "2001",
+                rating: "8.6", // Рейтинг MAL
+                img: "2026-01-30-08-13-12-image.png"
+            },
+            {
+                title: "Ученик чудовища",
+                year: "2015",
+                rating: "7.6", // Рейтинг Кинопоиск/MAL
+                img: "i.jpeg"
+            }
+        ];
+
+        // === СИСТЕМНЫЕ ПЕРЕМЕННЫЕ ===
+        let user = JSON.parse(localStorage.getItem('niyaz_user_v2')) || null;
+        const app = document.getElementById('app');
+        const auth = document.getElementById('auth-screen');
+
+        // === ЗАПУСК ===
+        window.onload = () => {
+            if (user) {
+                initApp();
+            } else {
+                auth.style.opacity = '1';
+            }
+            renderCards(animeDB, 'anime-container');
+            loadChat();
+        };
+
+        // === ФУНКЦИИ РЕГИСТРАЦИИ ===
+        function register() {
+            const name = document.getElementById('reg-name').value.trim();
+            if (name.length > 2) {
+                user = {
+                    name: name,
+                    regDate: new Date().toLocaleDateString(),
+                    regTime: Date.now(),
+                    watched: 0 // Начинаем с НУЛЯ!
+                };
+                saveUser();
+                initApp();
+            } else {
+                alert("Имя должно быть длиннее 2 букв!");
+            }
+        }
+
+        function initApp() {
+            auth.style.opacity = '0';
+            setTimeout(() => { auth.style.display = 'none'; app.style.display = 'block'; setTimeout(() => app.style.opacity = '1', 50); }, 500);
+            
+            updateProfileUI();
+        }
+
+        function saveUser() {
+            localStorage.setItem('niyaz_user_v2', JSON.stringify(user));
+            updateProfileUI();
+        }
+
+        function logout() {
+            if(confirm("Выйти из аккаунта?")) {
+                localStorage.removeItem('niyaz_user_v2');
+                location.reload();
+            }
+        }
+
+        // === ОБНОВЛЕНИЕ ПРОФИЛЯ (ВСЁ ПО-ЧЕСТНОМУ) ===
+        function updateProfileUI() {
+            if(!user) return;
+            document.getElementById('header-user').innerText = user.name;
+            document.getElementById('profile-name').innerText = user.name;
+            document.getElementById('profile-avatar').innerText = user.name[0].toUpperCase();
+            document.getElementById('reg-date').innerText = user.regDate;
+            
+            // Реальные просмотры
+            document.getElementById('stat-watched').innerText = user.watched;
+            
+            // Реальные дни
+            const days = Math.floor((Date.now() - user.regTime) / (1000 * 60 * 60 * 24));
+            document.getElementById('stat-days').innerText = days;
+        }
+
+        // === ГЕНЕРАТОР КАРТОЧЕК ===
+        function renderCards(data, containerId) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = "";
+            data.forEach(item => {
+                const html = `
+                <div class="card">
+                    <img src="${item.img}" onerror="this.src='https://via.placeholder.com/200x300?text=NO+IMAGE'">
+                    <div class="card-info">
+                        <div class="card-meta">
+                            <span>${item.rating} RATING</span>
+                            <span>${item.year}</span>
+                        </div>
+                        <div class="card-title">${item.title}</div>
+                        <button class="btn-watch" onclick="openPlayer('${item.title}')">СМОТРЕТЬ</button>
+                    </div>
+                </div>`;
+                container.innerHTML += html;
+            });
+        }
+
+        // === ПОИСК ===
+        function searchAnime() {
+            const val = document.getElementById('search-input').value.toLowerCase();
+            const filtered = animeDB.filter(a => a.title.toLowerCase().includes(val));
+            renderCards(filtered, 'search-results');
+        }
+
+        // === ПЛЕЕР И СТАТИСТИКА ===
+        function openPlayer(title) {
+            document.getElementById('player-overlay').style.display = 'flex';
+            document.getElementById('player-title').innerText = title;
+            
+            // ЧЕСТНЫЙ СЧЕТЧИК: Увеличиваем просмотры только при клике
+            user.watched++; 
+            saveUser(); 
+        }
+
+        function closePlayer() {
+            document.getElementById('player-overlay').style.display = 'none';
+        }
+
+        // === ЧАТ ===
+        function sendMsg() {
+            const input = document.getElementById('chat-msg');
+            const txt = input.value.trim();
+            if(txt) {
+                const chatWin = document.getElementById('chat-window');
+                const time = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+                
+                const html = `
+                    <div class="msg mine">
+                        <span class="msg-name">${user.name} • ${time}</span>
+                        ${txt.replace(/</g, '')}
+                    </div>
+                `;
+                chatWin.innerHTML += html;
+                localStorage.setItem('real_chat_history', chatWin.innerHTML);
+                input.value = "";
+                chatWin.scrollTop = chatWin.scrollHeight;
+            }
+        }
+
+        function loadChat() {
+            document.getElementById('chat-window').innerHTML = localStorage.getItem('real_chat_history') || '<div style="text-align:center; color:#444; font-size:12px; margin-top:20px;">Чат создан. Будьте первыми!</div>';
+        }
+
+        // === НАВИГАЦИЯ ===
+        function switchTab(id, el) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            el.classList.add('active');
+        }
+    </script>
+</body>
+</html>
