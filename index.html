@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NIYAZANIME | QUANTUM SECURE</title>
+    
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Syncopate:wght@700&family=Inter:wght@300;400;700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --accent: #00f2ff; /* Neon Cyan */
+            --danger: #ff0055;
+            --bg: #020205;
+            --panel: #0a0a0f;
+            --glass: rgba(255, 255, 255, 0.03);
+            --border: rgba(0, 242, 255, 0.15);
+        }
+
+        * { box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; outline: none; }
+        
+        body { 
+            margin: 0; background: var(--bg); color: #fff; overflow-x: hidden; 
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        /* --- QUANTUM BACKGROUND --- */
+        #bg-canvas {
+            position: fixed; inset: 0; z-index: -1;
+            background: radial-gradient(circle at 50% 50%, #101020 0%, #020205 100%);
+        }
+
+        /* --- AUTH PROTOCOL --- */
+        #terminal-auth {
+            position: fixed; inset: 0; background: var(--bg); z-index: 10000;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .auth-container {
+            width: 90%; max-width: 400px; background: var(--panel); 
+            border: 1px solid var(--border); border-radius: 35px; padding: 40px;
+            box-shadow: 0 0 40px rgba(0, 242, 255, 0.05); text-align: center;
+        }
+        .v-logo { font-family: 'Syncopate', sans-serif; font-size: 24px; color: var(--accent); margin-bottom: 40px; letter-spacing: 5px; }
+        
+        .input-wrap { margin-bottom: 20px; text-align: left; }
+        .input-wrap label { font-size: 10px; color: var(--accent); text-transform: uppercase; letter-spacing: 2px; margin-left: 10px; }
+        
+        input {
+            width: 100%; background: rgba(0,0,0,0.5); border: 1px solid var(--border);
+            padding: 18px; border-radius: 15px; color: #fff; font-size: 16px; margin-top: 8px;
+            transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        input:focus { border-color: var(--accent); box-shadow: 0 0 20px rgba(0, 242, 255, 0.2); background: #000; }
+
+        .btn-auth {
+            width: 100%; padding: 18px; background: var(--accent); color: #000;
+            border: none; border-radius: 15px; font-weight: 900; cursor: pointer;
+            text-transform: uppercase; letter-spacing: 1px; transition: 0.3s;
+        }
+        .btn-auth:active { transform: scale(0.95); opacity: 0.8; }
+
+        /* --- MAIN SYSTEM --- */
+        #system-root { display: none; }
+
+        header {
+            padding: 25px; display: flex; justify-content: space-between; align-items: center;
+            position: sticky; top: 0; background: rgba(2,2,5,0.8); backdrop-filter: blur(20px); z-index: 500;
+        }
+        .status-dot { width: 8px; height: 8px; background: #00ff88; border-radius: 50%; box-shadow: 0 0 10px #00ff88; }
+
+        .view-frame { display: none; padding: 0 20px 100px; animation: viewIn 0.6s ease; }
+        .view-frame.active { display: block; }
+
+        @keyframes viewIn { from { opacity: 0; filter: blur(10px); } to { opacity: 1; filter: blur(0); } }
+
+        /* --- ANIME CARDS PRO --- */
+        .card-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .cyber-card {
+            background: var(--panel); border-radius: 25px; border: 1px solid var(--border);
+            overflow: hidden; position: relative; transition: 0.3s;
+        }
+        .cyber-card .thumb { width: 100%; aspect-ratio: 2/3; object-fit: cover; border-bottom: 1px solid var(--border); }
+        .cyber-card .badge { 
+            position: absolute; top: 12px; right: 12px; background: var(--accent);
+            color: #000; font-size: 10px; font-weight: 900; padding: 4px 8px; border-radius: 8px;
+        }
+        .card-body { padding: 12px; }
+        .card-body h4 { margin: 0; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        
+        /* --- CHAT ENGINE v3 --- */
+        .chat-hub { 
+            height: 60vh; background: rgba(0,0,0,0.4); border-radius: 30px; 
+            border: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden;
+        }
+        #messages-wall { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 12px; }
+        .msg-bubble { 
+            max-width: 80%; padding: 12px 16px; border-radius: 20px; font-size: 14px; 
+            background: var(--glass); border: 1px solid var(--border); line-height: 1.4;
+        }
+        .msg-bubble.is-me { align-self: flex-end; background: var(--accent); color: #000; border: none; font-weight: 500; }
+        .msg-info { display: block; font-size: 9px; margin-bottom: 4px; opacity: 0.6; text-transform: uppercase; font-weight: 800; }
+
+        .chat-controls { padding: 15px; display: flex; gap: 10px; }
+        #chat-input { flex: 1; margin: 0; background: #000; border-radius: 30px; padding: 12px 20px; border-color: var(--border); }
+
+        /* --- NAVIGATION --- */
+        .nav-dock {
+            position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%);
+            width: 90%; max-width: 350px; background: rgba(10,10,15,0.8);
+            backdrop-filter: blur(20px); border-radius: 30px; border: 1px solid var(--border);
+            display: flex; justify-content: space-around; padding: 10px; z-index: 1000;
+        }
+        .nav-btn { color: #555; transition: 0.3s; padding: 10px; border-radius: 20px; }
+        .nav-btn.active { color: var(--accent); background: rgba(0, 242, 255, 0.05); }
+        .nav-btn svg { width: 24px; height: 24px; fill: currentColor; }
+    </style>
+</head>
+<body>
+
+    <div id="bg-canvas"></div>
+
+    <div id="terminal-auth">
+        <div class="auth-container">
+            <div class="v-logo">NIYAZANIME</div>
+            <div class="input-wrap">
+                <label>User Identifier</label>
+                <input type="text" id="u-login" placeholder="Nickname">
+            </div>
+            <div class="input-wrap">
+                <label>Access Code</label>
+                <input type="password" id="u-pass" placeholder="••••••••">
+            </div>
+            <button class="btn-auth" onclick="Kernel.auth()">Confirm Identity</button>
+            <div id="auth-log" style="font-size: 11px; margin-top: 15px; color: var(--danger); display: none;">Invalid Access Token</div>
+        </div>
+    </div>
+
+    <div id="system-root">
+        <header>
+            <div style="font-family: 'Syncopate'; font-size: 16px;">QUANTUM_HUB</div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <span id="user-display" style="font-size: 12px; font-weight: 800;">USER</span>
+                <div class="status-dot"></div>
+            </div>
+        </header>
+
+        <div id="view-home" class="view-frame active">
+            <h2 style="font-weight: 900; letter-spacing: -1px;">DISCOVER</h2>
+            <div class="card-row" id="catalog-grid"></div>
+        </div>
+
+        <div id="view-search" class="view-frame">
+            <h2 style="font-weight: 900; letter-spacing: -1px;">DATABASE</h2>
+            <input type="text" id="q-search" oninput="Kernel.search()" placeholder="Filter by name, year, genre...">
+            <div class="card-row" id="search-grid" style="margin-top:20px;"></div>
+        </div>
+
+        <div id="view-chat" class="view-frame">
+            <h2 style="font-weight: 900; letter-spacing: -1px;">SECURE_CHAT</h2>
+            <div class="chat-hub">
+                <div id="messages-wall"></div>
+                <div class="chat-controls">
+                    <input type="text" id="chat-input" placeholder="Message..." onkeypress="if(event.key==='Enter')Kernel.send()">
+                    <button class="btn-auth" onclick="Kernel.send()" style="width: 50px; border-radius: 50%; padding:0;">➹</button>
+                </div>
+            </div>
+        </div>
+
+        <nav class="nav-dock">
+            <div class="nav-btn active" onclick="Kernel.nav('view-home', this)">
+                <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+            </div>
+            <div class="nav-btn" onclick="Kernel.nav('view-search', this)">
+                <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+            </div>
+            <div class="nav-btn" onclick="Kernel.nav('view-chat', this)">
+                <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z"/></svg>
+            </div>
+            <div class="nav-btn" onclick="Kernel.kill()">
+                <svg viewBox="0 0 24 24"><path d="M13 3h-2v10h2V3zm4.83 2.17l-1.42 1.42C17.99 7.86 19 9.81 19 12c0 3.87-3.13 7-7 7s-7-3.13-7-7c0-2.19 1.01-4.14 2.58-5.42L6.17 5.17C4.23 6.82 3 9.26 3 12c0 4.97 4.03 9 9 9s9-4.03 9-9c0-2.74-1.23-5.18-3.17-6.83z"/></svg>
+            </div>
+        </nav>
+    </div>
+
+    <script>
+        const Kernel = {
+            db: null,
+            user: null,
+            lastMsgTime: 0,
+            anime: [
+                { t: "Твое имя", y: "2016", r: "9.8", i: "2TP018QS51eFzJPCgvHCYg.png", g: "Drama" },
+                { t: "Унесенные призраками", y: "2001", r: "8.6", i: "2026-01-30-08-13-12-images.jpg", g: "Fantasy" },
+                { t: "Ученик чудовища", y: "2015", r: "7.7", i: "i.jpeg", g: "Action" }
+            ],
+
+            init() {
+                firebase.initializeApp({ databaseURL: "https://niyaz-7c412-default-rtdb.firebaseio.com/" });
+                this.db = firebase.database();
+                this.check();
+                this.draw(this.anime, 'catalog-grid');
+            },
+
+            auth() {
+                const u = document.getElementById('u-login').value.trim();
+                const p = document.getElementById('u-pass').value.trim();
+                if(u.length > 2 && p.length > 3) {
+                    this.user = { name: u, level: u.toLowerCase() === 'admin' ? 7 : 1 };
+                    localStorage.setItem('qx_session', JSON.stringify(this.user));
+                    this.boot();
+                } else {
+                    const err = document.getElementById('auth-log');
+                    err.style.display = 'block';
+                    setTimeout(() => err.style.display = 'none', 2000);
+                }
+            },
+
+            check() {
+                const session = localStorage.getItem('qx_session');
+                if(session) {
+                    this.user = JSON.parse(session);
+                    this.boot();
+                }
+            },
+
+            boot() {
+                document.getElementById('terminal-auth').style.display = 'none';
+                document.getElementById('system-root').style.display = 'block';
+                document.getElementById('user-display').innerText = this.user.name.toUpperCase();
+                this.connect();
+            },
+
+            draw(data, target) {
+                const grid = document.getElementById(target);
+                grid.innerHTML = data.map(a => `
+                    <div class="cyber-card">
+                        <div class="badge">MAL ${a.r}</div>
+                        <img src="${a.i}" class="thumb" onerror="this.src='https://via.placeholder.com/300x450/0a0a0f/accent?text=DECRYPTING...'">
+                        <div class="card-body">
+                            <h4>${a.t}</h4>
+                            <div style="font-size:10px; color:var(--accent); opacity:0.6;">${a.y} • ${a.g}</div>
+                        </div>
+                    </div>
+                `).join('');
+            },
+
+            nav(id, btn) {
+                document.querySelectorAll('.view-frame').forEach(v => v.classList.remove('active'));
+                document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+                document.getElementById(id).classList.add('active');
+                btn.classList.add('active');
+            },
+
+            search() {
+                const q = document.getElementById('q-search').value.toLowerCase();
+                const res = this.anime.filter(x => x.t.toLowerCase().includes(q) || x.g.toLowerCase().includes(q) || x.y.includes(q));
+                this.draw(res, 'search-grid');
+            },
+
+            send() {
+                const now = Date.now();
+                if(now - this.lastMsgTime < 2000) return; // Anti-Spam
+                
+                const input = document.getElementById('chat-input');
+                const val = input.value.trim();
+                if(val) {
+                    this.db.ref('secure_stream').push({
+                        u: this.user.name,
+                        m: this.clean(val),
+                        ts: now
+                    });
+                    input.value = "";
+                    this.lastMsgTime = now;
+                }
+            },
+
+            connect() {
+                this.db.ref('secure_stream').limitToLast(40).on('value', snap => {
+                    const wall = document.getElementById('messages-wall');
+                    wall.innerHTML = "";
+                    snap.forEach(msg => {
+                        const d = msg.val();
+                        const mine = d.u === this.user.name ? 'is-me' : '';
+                        wall.innerHTML += `
+                            <div class="msg-bubble ${mine}">
+                                <span class="msg-info">${d.u}</span>
+                                ${d.m}
+                            </div>
+                        `;
+                    });
+                    wall.scrollTop = wall.scrollHeight;
+                });
+            },
+
+            clean(str) {
+                const div = document.createElement('div');
+                div.textContent = str;
+                return div.innerHTML;
+            },
+
+            kill() {
+                if(confirm("TERMINATE SESSION?")) {
+                    localStorage.removeItem('qx_session');
+                    location.reload();
+                }
+            }
+        };
+
+        Kernel.init();
+    </script>
+</body>
+</html>
