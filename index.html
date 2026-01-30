@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NIYAZANIME | PRO</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+    <style>
+        :root { --red: #e50914; --black: #050505; }
+        body { background: var(--black); color: white; font-family: sans-serif; margin: 0; padding-bottom: 70px; }
+        .header { padding: 15px; text-align: center; border-bottom: 2px solid var(--red); background: #000; }
+        .logo { font-family: 'Bebas Neue', cursive; font-size: 38px; color: var(--red); letter-spacing: 3px; }
+        
+        .page { display: none; padding: 15px; }
+        .active { display: block; }
+
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .card { background: #111; border-radius: 10px; overflow: hidden; border: 1px solid #222; }
+        .card img { width: 100%; aspect-ratio: 2/3; object-fit: cover; }
+        .info { padding: 8px; }
+        .btn { background: var(--red); color: white; border: none; width: 100%; padding: 8px; border-radius: 5px; font-weight: bold; }
+
+        /* ЧАТ */
+        #chat-box { height: 60vh; overflow-y: auto; background: #0a0a0a; border: 1px solid #333; padding: 10px; margin-bottom: 10px; border-radius: 8px; }
+        .msg { background: #1a1a1a; padding: 8px; border-radius: 5px; margin-bottom: 8px; border-left: 3px solid var(--red); }
+        .msg b { color: var(--red); font-size: 12px; }
+
+        /* НАВИГАЦИЯ ВНИЗУ */
+        .nav { position: fixed; bottom: 0; width: 100%; background: #000; display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid #333; }
+        .nav-btn { color: #888; text-decoration: none; font-weight: bold; font-size: 12px; cursor: pointer; }
+        .nav-btn.active { color: var(--red); }
+    </style>
+</head>
+<body>
+
+<div class="header"><div class="logo">NIYAZANIME</div></div>
+
+<div id="home" class="page active">
+    <div class="grid">
+        <div class="card">
+            <img src="2TP018QS51eFzJPCgvHCYg.png">
+            <div class="info"><h3>Твое имя</h3><button class="btn">СМОТРЕТЬ</button></div>
+        </div>
+        <div class="card">
+            <img src="2026-01-30-08-13-12-image.png">
+            <div class="info"><h3>Унесенные</h3><button class="btn">СМОТРЕТЬ</button></div>
+        </div>
+        <div class="card">
+            <img src="i.jpeg">
+            <div class="info"><h3>Ученик чудовища</h3><button class="btn">СМОТРЕТЬ</button></div>
+        </div>
+    </div>
+</div>
+
+<div id="search" class="page">
+    <input type="text" placeholder="Поиск аниме..." style="width:100%; padding:12px; background:#111; color:white; border:1px solid #444; border-radius:8px;">
+</div>
+
+<div id="chat" class="page">
+    <div id="chat-box"></div>
+    <div style="display:flex; gap:10px;">
+        <input type="text" id="m" style="flex:1; padding:10px; border-radius:5px; background:#111; color:white; border:1px solid #333;">
+        <button class="btn" style="width:auto; padding:10px 20px;" onclick="send()">➤</button>
+    </div>
+</div>
+
+<div class="nav">
+    <div class="nav-btn active" onclick="show('home', this)">ГЛАВНАЯ</div>
+    <div class="nav-btn" onclick="show('search', this)">ПОИСК</div>
+    <div class="nav-btn" onclick="show('chat', this)">ЧАТ</div>
+</div>
+
+<script>
+    let user = localStorage.getItem('user') || "";
+
+    window.onload = () => {
+        if(!user) {
+            user = prompt("Регистрация: Введите ваш ник") || "Гость";
+            localStorage.setItem('user', user);
+        }
+        document.getElementById('chat-box').innerHTML = localStorage.getItem('chat_history') || "";
+    };
+
+    function show(id, btn) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        btn.classList.add('active');
+    }
+
+    function send() {
+        let i = document.getElementById('m');
+        let b = document.getElementById('chat-box');
+        if(i.value.trim()) {
+            let time = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+            let m = `<div class="msg"><b>${user} • ${time}</b><br>${i.value}</div>`;
+            b.innerHTML += m;
+            localStorage.setItem('chat_history', b.innerHTML);
+            i.value = ""; b.scrollTop = b.scrollHeight;
+        }
+    }
+</script>
+</body>
+  </html>
+  
