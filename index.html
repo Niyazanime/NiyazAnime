@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NIYAZANIME | ULTIMATE</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- НАСТРОЙКИ ДИЗАЙНА (CSS) --- */
+        :root {
+            --primary: #e50914;
+            --dark: #000000;
+            --gray: #121212;
+            --light: #ffffff;
+            --glass: rgba(20, 20, 20, 0.95);
+        }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { background-color: var(--dark); color: var(--light); font-family: 'Roboto', sans-serif; margin: 0; padding-bottom: 80px; overflow-x: hidden; }
+        
+        /* ЗАСТАВКА ВХОДА */
+        #welcome-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 0.5s; }
+        #welcome-screen h1 { font-family: 'Bebas Neue'; color: var(--primary); font-size: 50px; margin-bottom: 20px; animation: pulse 2s infinite; }
+        .login-input { padding: 15px; width: 80%; background: #222; border: 1px solid #444; color: white; border-radius: 8px; font-size: 16px; margin-bottom: 15px; outline: none; }
+        .login-btn { background: var(--primary); color: white; border: none; padding: 15px 40px; border-radius: 30px; font-weight: bold; font-size: 18px; cursor: pointer; text-transform: uppercase; letter-spacing: 2px; }
+
+        /* ШАПКА */
+        header { padding: 20px; background: linear-gradient(180deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 100%); position: sticky; top: 0; z-index: 100; text-align: center; }
+        .logo { font-family: 'Bebas Neue'; font-size: 40px; color: var(--primary); letter-spacing: 3px; text-shadow: 0 0 20px rgba(229,9,20,0.6); }
+
+        /* СТРАНИЦЫ */
+        .page { display: none; padding: 0 15px; animation: fadeIn 0.4s ease; }
+        .page.active { display: block; }
+
+        /* СЕТКА АНИМЕ */
+        .section-title { font-size: 20px; font-weight: bold; margin: 20px 0 10px; border-left: 4px solid var(--primary); padding-left: 10px; }
+        .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
+        .card { background: var(--gray); border-radius: 12px; overflow: hidden; position: relative; transition: transform 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        .card:active { transform: scale(0.97); }
+        .card img { width: 100%; aspect-ratio: 2/3; object-fit: cover; display: block; }
+        .card-content { padding: 12px; }
+        .card-title { font-size: 14px; font-weight: 700; margin: 0 0 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .card-meta { font-size: 11px; color: #aaa; display: flex; justify-content: space-between; margin-bottom: 10px; }
+        .watch-btn { width: 100%; padding: 10px; background: #333; color: white; border: none; border-radius: 6px; font-weight: bold; font-size: 12px; cursor: pointer; }
+        .watch-btn.hot { background: var(--primary); }
+
+        /* ЧАТ */
+        #chat-container { height: 65vh; display: flex; flex-direction: column; background: var(--gray); border-radius: 15px; overflow: hidden; border: 1px solid #333; }
+        #chat-messages { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; }
+        .message { padding: 10px 15px; border-radius: 12px; max-width: 80%; font-size: 14px; line-height: 1.4; animation: slideIn 0.3s; }
+        .message.mine { align-self: flex-end; background: var(--primary); color: white; border-bottom-right-radius: 2px; }
+        .message.others { align-self: flex-start; background: #333; color: #ddd; border-bottom-left-radius: 2px; }
+        .msg-meta { font-size: 10px; opacity: 0.7; margin-bottom: 3px; display: block; }
+        .chat-input-area { padding: 10px; background: #000; display: flex; gap: 10px; border-top: 1px solid #333; }
+        #msg-input { flex: 1; padding: 12px; border-radius: 20px; border: none; background: #222; color: white; outline: none; }
+        #send-btn { width: 45px; height: 45px; border-radius: 50%; background: var(--primary); border: none; color: white; font-size: 18px; display: flex; align-items: center; justify-content: center; }
+
+        /* ПОИСК */
+        .search-bar { width: 100%; padding: 15px; background: #222; border: 1px solid #333; border-radius: 10px; color: white; font-size: 16px; margin-bottom: 20px; outline: none; }
+        .search-bar:focus { border-color: var(--primary); }
+
+        /* ПРОФИЛЬ */
+        .profile-card { background: linear-gradient(45deg, #222, #111); padding: 30px; border-radius: 20px; text-align: center; border: 1px solid #333; }
+        .avatar-circle { width: 80px; height: 80px; background: var(--primary); border-radius: 50%; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; font-size: 30px; font-weight: bold; }
+        .stat-row { display: flex; justify-content: space-around; margin-top: 20px; }
+        .stat-item h4 { margin: 0; font-size: 24px; color: var(--primary); }
+        .stat-item span { font-size: 12px; color: #888; }
+
+        /* ВИДЕО ПЛЕЕР (МОДАЛКА) */
+        #video-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: black; z-index: 2000; align-items: center; justify-content: center; }
+        .video-container { width: 100%; max-width: 800px; text-align: center; }
+        .close-video { position: absolute; top: 20px; right: 20px; color: white; font-size: 30px; cursor: pointer; z-index: 2001; }
+        .placeholder-player { width: 100%; height: 300px; background: #111; display: flex; align-items: center; justify-content: center; color: #555; border: 1px solid #333; }
+
+        /* НИЖНЯЯ НАВИГАЦИЯ */
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; height: 70px; background: rgba(0,0,0,0.95); backdrop-filter: blur(10px); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #333; z-index: 1000; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; color: #666; font-size: 10px; font-weight: bold; width: 25%; cursor: pointer; transition: 0.2s; }
+        .nav-item span { font-size: 24px; margin-bottom: 4px; }
+        .nav-item.active { color: var(--primary); transform: translateY(-2px); }
+
+        /* АНИМАЦИИ */
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+    </style>
+</head>
+<body>
+
+    <div id="welcome-screen">
+        <h1>NIYAZANIME</h1>
+        <p style="color:#888; margin-bottom: 30px;">Добро пожаловать в элитный клуб</p>
+        <input type="text" id="username-input" class="login-input" placeholder="Придумайте никнейм...">
+        <button class="login-btn" onclick="registerUser()">ВОЙТИ</button>
+    </div>
+
+    <div id="video-modal">
+        <div class="close-video" onclick="closeVideo()">✕</div>
+        <div class="video-container">
+            <h2 id="video-title" style="margin-bottom: 20px;">Название фильма</h2>
+            <div class="placeholder-player">
+                <div>
+                    <p>▶ ЗАГРУЗКА ПЛЕЕРА...</p>
+                    <p style="font-size: 12px; color: #444;">(Здесь будет видео)</p>
+                </div>
+            </div>
+            <button class="login-btn" style="margin-top: 20px;" onclick="closeVideo()">ЗАКРЫТЬ</button>
+        </div>
+    </div>
+
+    <div id="app" style="display: none;">
+        <header>
+            <div class="logo">NIYAZANIME</div>
+        </header>
+
+        <div id="page-home" class="page active">
+            <div class="section-title">ГОРЯЧИЕ НОВИНКИ</div>
+            <div class="grid" id="anime-list">
+                <div class="card" data-title="Твое имя">
+                    <img src="2TP018QS51eFzJPCgvHCYg.png" alt="Твое имя" onerror="this.src='https://via.placeholder.com/200x300?text=NO+IMAGE'">
+                    <div class="card-content">
+                        <div class="card-meta"><span>2016</span><span>★ 9.8</span></div>
+                        <h3 class="card-title">Твое имя</h3>
+                        <button class="watch-btn hot" onclick="openVideo('Твое имя')">СМОТРЕТЬ</button>
+                    </div>
+                </div>
+
+                <div class="card" data-title="Унесенные призраками">
+                    <img src="2026-01-30-08-13-12-image.png" alt="Унесенные призраками" onerror="this.src='https://via.placeholder.com/200x300?text=NO+IMAGE'">
+                    <div class="card-content">
+                        <div class="card-meta"><span>2001</span><span>★ 9.9</span></div>
+                        <h3 class="card-title">Унесенные призраками</h3>
+                        <button class="watch-btn hot" onclick="openVideo('Унесенные призраками')">СМОТРЕТЬ</button>
+                    </div>
+                </div>
+
+                <div class="card" data-title="Ученик чудовища">
+                    <img src="i.jpeg" alt="Ученик чудовища" onerror="this.src='https://via.placeholder.com/200x300?text=NO+IMAGE'">
+                    <div class="card-content">
+                        <div class="card-meta"><span>2015</span><span>★ 9.0</span></div>
+                        <h3 class="card-title">Ученик чудовища</h3>
+                        <button class="watch-btn hot" onclick="openVideo('Ученик чудовища')">СМОТРЕТЬ</button>
+                    </div>
+                </div>
+                
+                <div class="card" data-title="Атака Титанов">
+                    <img src="https://m.media-amazon.com/images/M/MV5BMTY5ODk1NzUyMl5BMl5BanBnXkFtZTgwMjQwNTgyNjM@._V1_FMjpg_UX1000_.jpg" alt="АОТ">
+                    <div class="card-content">
+                        <div class="card-meta"><span>2013</span><span>★ 9.9</span></div>
+                        <h3 class="card-title">Атака Титанов</h3>
+                        <button class="watch-btn" onclick="openVideo('Атака Титанов')">СКОРО</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="page-search" class="page">
+            <div class="section-title">ПОИСК АНИМЕ</div>
+            <input type="text" id="search-input" class="search-bar" placeholder="Введите название..." oninput="filterAnime()">
+            <div class="grid" id="search-results">
+                </div>
+            <p style="text-align:center; color:#555; margin-top: 20px;">Показаны все совпадения</p>
+        </div>
+
+        <div id="page-chat" class="page">
+            <div class="section-title">ОБЩИЙ ЧАТ</div>
+            <div id="chat-container">
+                <div id="chat-messages"></div>
+                <div class="chat-input-area">
+                    <input type="text" id="msg-input" placeholder="Напишите сообщение..." onkeypress="if(event.key==='Enter')sendMessage()">
+                    <button id="send-btn" onclick="sendMessage()">➤</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="page-profile" class="page">
+            <div class="section-title">МОЙ ПРОФИЛЬ</div>
+            <div class="profile-card">
+                <div class="avatar-circle" id="profile-avatar">N</div>
+                <h2 id="profile-name">Гость</h2>
+                <p style="color: var(--primary);">PRO ACCCOUNT</p>
+                <div class="stat-row">
+                    <div class="stat-item"><h4>12</h4><span>Просмотрено</span></div>
+                    <div class="stat-item"><h4>5</h4><span>Избранное</span></div>
+                    <div class="stat-item"><h4>89</h4><span>Дней с нами</span></div>
+                </div>
+                <button class="watch-btn" style="margin-top: 20px; background: #333;" onclick="logout()">ВЫЙТИ ИЗ АККАУНТА</button>
+            </div>
+        </div>
+
+        <nav class="bottom-nav">
+            <div class="nav-item active" onclick="navTo('page-home', this)"><span>🏠</span>Главная</div>
+            <div class="nav-item" onclick="navTo('page-search', this)"><span>🔍</span>Поиск</div>
+            <div class="nav-item" onclick="navTo('page-chat', this)"><span>💬</span>Чат</div>
+            <div class="nav-item" onclick="navTo('page-profile', this)"><span>👤</span>Профиль</div>
+        </nav>
+    </div>
+
+    <script>
+        // --- ПЕРЕМЕННЫЕ ---
+        let currentUser = localStorage.getItem('niyaz_username');
+        const app = document.getElementById('app');
+        const welcome = document.getElementById('welcome-screen');
+
+        // --- ЗАПУСК ---
+        window.onload = function() {
+            if (currentUser) {
+                showApp();
+            } else {
+                welcome.style.display = 'flex';
+            }
+            loadChat();
+            updateProfile();
+            // Копируем карточки в поиск
+            document.getElementById('search-results').innerHTML = document.getElementById('anime-list').innerHTML;
+        };
+
+        // --- РЕГИСТРАЦИЯ ---
+        function registerUser() {
+            const input = document.getElementById('username-input');
+            const name = input.value.trim();
+            if (name) {
+                currentUser = name;
+                localStorage.setItem('niyaz_username', name);
+                showApp();
+                updateProfile();
+            } else {
+                alert("Пожалуйста, введите ник!");
+            }
+        }
+
+        function showApp() {
+            welcome.style.opacity = '0';
+            setTimeout(() => {
+                welcome.style.display = 'none';
+                app.style.display = 'block';
+            }, 500);
+        }
+
+        function logout() {
+            localStorage.removeItem('niyaz_username');
+            location.reload();
+        }
+
+        function updateProfile() {
+            if(currentUser) {
+                document.getElementById('profile-name').innerText = currentUser;
+                document.getElementById('profile-avatar').innerText = currentUser[0].toUpperCase();
+            }
+        }
+
+        // --- НАВИГАЦИЯ ---
+        function navTo(pageId, btn) {
+            // Скрыть все страницы
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+            // Показать нужную
+            document.getElementById(pageId).classList.add('active');
+            btn.classList.add('active');
+        }
+
+        // --- ПОИСК ---
+        function filterAnime() {
+            const query = document.getElementById('search-input').value.toLowerCase();
+            const cards = document.querySelectorAll('#search-results .card');
+            
+            cards.forEach(card => {
+                const title = card.getAttribute('data-title').toLowerCase();
+                if (title.includes(query)) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        // --- ЧАТ ---
+        function sendMessage() {
+            const input = document.getElementById('msg-input');
+            const text = input.value.trim();
+            if (text) {
+                const time = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+                const chatBox = document.getElementById('chat-messages');
+                
+                // Создаем сообщение
+                const msgHTML = `
+                    <div class="message mine">
+                        <span class="msg-meta">${currentUser} • ${time}</span>
+                        ${text.replace(/</g, "&lt;")}
+                    </div>`;
+                
+                chatBox.innerHTML += msgHTML;
+                localStorage.setItem('niyaz_chat_pro', chatBox.innerHTML);
+                input.value = "";
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }
+        }
+
+        function loadChat() {
+            const history = localStorage.getItem('niyaz_chat_pro');
+            const chatBox = document.getElementById('chat-messages');
+            if (history) {
+                chatBox.innerHTML = history;
+            } else {
+                chatBox.innerHTML = '<div class="message others"><span class="msg-meta">System</span>Добро пожаловать в чат NIYAZANIME!</div>';
+            }
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        // --- ВИДЕО ПЛЕЕР ---
+        function openVideo(title) {
+            document.getElementById('video-title').innerText = "Просмотр: " + title;
+            document.getElementById('video-modal').style.display = 'flex';
+        }
+
+        function closeVideo() {
+            document.getElementById('video-modal').style.display = 'none';
+        }
+    </script>
+</body>
+                                                                                    </html>
+                                                                                    
