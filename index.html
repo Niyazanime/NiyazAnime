@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NIYAZANIME | Премиум-коллекция</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Шапка сайта -->
+    <header class="header">
+        <div class="container">
+            <div class="logo-title">
+                <i class="fas fa-play-circle logo-icon"></i>
+                <h1 class="logo">NIYAZ<span class="logo-accent">ANIME</span></h1>
+                <span class="beta-badge">BETA</span>
+            </div>
+            
+            <div class="header-controls">
+                <div class="search-box">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" id="searchInput" placeholder="Поиск аниме..." class="search-input">
+                </div>
+                
+                <div class="favorites-counter">
+                    <i class="fas fa-heart"></i>
+                    <span id="favCount">0</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Основной контент -->
+    <main class="main container">
+        <div class="page-header">
+            <h2 class="page-title">🔥 Коллекция премиум-аниме</h2>
+            <p class="page-subtitle">Добавляйте в избранное — сохраняется навсегда</p>
+        </div>
+        
+        <!-- Сетка аниме -->
+        <div class="anime-grid" id="animeGrid">
+            <!-- Карточки будут вставлены через JavaScript -->
+        </div>
+        
+        <!-- Информация о сохранении -->
+        <div class="save-notice">
+            <i class="fas fa-info-circle"></i>
+            <p>Ваше избранное автоматически сохраняется в этом браузере</p>
+        </div>
+    </main>
+
+    <!-- Модальное окно деталей -->
+    <div class="modal" id="animeModal">
+        <div class="modal-content">
+            <button class="modal-close" id="modalClose">&times;</button>
+            <div class="modal-body" id="modalBody">
+                <!-- Контент модалки заполняется через JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Скрипты -->
+    <script src="script.js"></script>
+</body>
+</html>
